@@ -4,6 +4,7 @@ import InitCommand from './InitCommand.js';
 import branchCommand from './BranchCommand.js';
 import GitUtil from './GitUtil.js';
 import SwitchCommand from './SwitchCommand.js';
+import AddCommand from './AddCommand.js';
 
 export default class Repository {
   constructor(rootPath) {
@@ -15,9 +16,10 @@ export default class Repository {
     this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
     this.indexPath = path.join(this.gitPath, "index");
 
-    this.gitUtil = new GitUtil(rootPath);
+    this.gitUtil = GitUtil.getInstance();
     this.branchCommand = new branchCommand(rootPath);
     this.switchCommand = new SwitchCommand(rootPath);
+    this.addCommand = new AddCommand(rootPath);
   }
 
   /** git 초기화 */
@@ -37,7 +39,7 @@ export default class Repository {
     
     // 브랜치 생성
     const curCommitHash = this.gitUtil.getCurrentCommitHash();      // 현재 HEAD가 가리키는 커밋 해시 읽기
-    this.branchCommand.createBranch(name, curCommitHash);           // refs/heads/ 에 브랜치 파일 생성 후
+    this.branchCommand.createBranch(name, curCommitHash);           // refs/heads/ 에 브랜치 파일 생성
   }
 
   switch(branchName) {
@@ -45,8 +47,7 @@ export default class Repository {
   }
 
   add(filePath) {
-    // 1. 파일 읽고 blob 생성
-    // 2. blob 저장하고, index에 기록
+    this.addCommand.add(filePath);
   }
 
   commit(message) {
