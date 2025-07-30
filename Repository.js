@@ -1,7 +1,9 @@
 import path from 'path';
+import fs from 'fs';
 import InitCommand from './InitCommand.js';
 import branchCommand from './BranchCommand.js';
 import GitUtil from './GitUtil.js';
+import SwitchCommand from './SwitchCommand.js';
 
 export default class Repository {
   constructor(rootPath) {
@@ -15,6 +17,7 @@ export default class Repository {
 
     this.gitUtil = new GitUtil(rootPath);
     this.branchCommand = new branchCommand(rootPath);
+    this.switchCommand = new SwitchCommand(rootPath);
   }
 
   /** git 초기화 */
@@ -26,15 +29,19 @@ export default class Repository {
   }
 
   branch(name = null, option = null) {
-
-    if (!name) {  // 브랜치 목록 출력
-      this.branchCommand.printBranchList();  
+    
+    if (!name) {  
+      this.branchCommand.printBranchList();  // 브랜치 목록 출력
       return;
     }
     
     // 브랜치 생성
     const curCommitHash = this.gitUtil.getCurrentCommitHash();      // 현재 HEAD가 가리키는 커밋 해시 읽기
-    this.branchCommand.createBranch(name, curCommitHash);           // refs/heads/ 에 브랜치 파일 생성 후 해시 저장
+    this.branchCommand.createBranch(name, curCommitHash);           // refs/heads/ 에 브랜치 파일 생성 후
+  }
+
+  switch(branchName) {
+    this.switchCommand.moveHeadTo(branchName);
   }
 
   add(filePath) {
