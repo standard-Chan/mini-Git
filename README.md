@@ -24,6 +24,7 @@ $ git init
 │   ├── <blob> (파일 내용)
 │   ├── <tree> (디렉토리 구조)
 │   └── <commit> (스냅샷의 포인터)
+├── index
 ├── refs/heads/
 └── HEAD
  ```
@@ -31,6 +32,7 @@ $ git init
 
 각 디렉토리 및 파일은 다음 정보를 저장합니다.
 - `objects` : blob, tree, commit 객체의 파일들을 저장할 디렉토리
+- `index` : staging 파일들을 저장해 놓은 파일
 - `refs/heads/` : 각 브랜치가 가리키고 있는 커밋 정보를 저장하는 디렉토리
 - `HEAD` : 현재 HEAD가 위치한 브랜치 정보
 
