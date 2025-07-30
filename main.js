@@ -10,4 +10,5 @@ repo.branch('new2');
 repo.branch();
 repo.switch('master');
 repo.add('test.txt');
-repo.add('test');
+
+repo.status();

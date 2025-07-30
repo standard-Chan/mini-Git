@@ -61,7 +61,7 @@ export default class GitUtil {
     if (!fs.existsSync(filePath)) {
       throw new Error(`파일을 찾을 수 없습니다: ${filePath}`);
     }
-    return fs.readFileSync(filePath);
+    return fs.readFileSync(filePath, 'utf-8');
   }
 }
 

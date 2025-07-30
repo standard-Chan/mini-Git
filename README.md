@@ -133,7 +133,7 @@ path = [a, a/b, a/b/c, a/b/c/test.txt];
 {
   'a' : {b},
   'a/b' : {c},
-  'a/b/c' : {test.txt}
+  'a/b/c' : {fileMode:100644, filePath: 'test.txt', 해시값}
 }
 
 // 4. 스테이징된 모든 데이터에 대해서 위 과정을 반복한다. 그러면 아래와 같은 데이터를 얻을 수 있다.
