@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import zlib from 'zlib';
 import { createHash } from 'crypto';
+
 
 
 export default class GitUtil {
@@ -36,5 +38,9 @@ export default class GitUtil {
     return createHash('sha1').update(content).digest('hex');
   }
 
-
+  /** zlib 압축 */
+  compress(content) {
+    const contentBuffer = Buffer.from(content, 'utf-8');
+    return zlib.deflateSync(contentBuffer);
+  }
 }

@@ -12,5 +12,8 @@ export default class AddCommand {
       this.indexPath = path.join(this.gitPath, "index");
     }
 
+    /** 해당 경로의 파일을 읽기 */
+    readFile(filePath) {}
+
     /** */
 }
