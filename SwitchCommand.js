@@ -1,4 +1,5 @@
-
+import path from 'path';
+import fs from 'fs';
 
 export default class SwitchCommand {
   constructor(rootPath) {
@@ -9,6 +10,8 @@ export default class SwitchCommand {
   }
 
   moveHeadTo(branchName) {
+    const branchPath = path.join(this.refsHeadsPath, branchName);
+    
     // 브랜치가 존재하는지 확인
     if (!fs.existsSync(branchPath)) {
       throw new Error(`브랜치 '${branchName}'가 존재하지 않습니다.`);

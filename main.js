@@ -7,3 +7,5 @@ repo.init();
 repo.branch();
 repo.branch('new2');
 repo.branch();
+repo.switch('new2');
+repo.switch('notValid');
