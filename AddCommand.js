@@ -12,8 +12,19 @@ export default class AddCommand {
       this.indexPath = path.join(this.gitPath, "index");
     }
 
-    /** 해당 경로의 파일을 읽기 */
-    readFile(filePath) {}
+    add() {
+      
+    }
+
+    /** blob 파일 저정하기 */
+    saveBlob() {
+
+    }
+
+    /** index 파일에 맵핑 정보 저장하기 */
+    saveToIndex() {
+
+    }
 
     /** 압축하기 */
     compress() {

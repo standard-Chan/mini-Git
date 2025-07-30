@@ -3,10 +3,14 @@ import path from 'path';
 import zlib from 'zlib';
 import { createHash } from 'crypto';
 
-
-
 export default class GitUtil {
+  static #instance;
+
   constructor(rootPath) {
+    if (GitUtil.#instance) {
+      return GitUtil.#instance;
+    }
+
     this.rootPath = rootPath;
     this.gitPath = path.join(rootPath, ".git");
 
@@ -14,15 +18,24 @@ export default class GitUtil {
     this.headPath = path.join(this.gitPath, "HEAD");
     this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
     this.indexPath = path.join(this.gitPath, "index");
+
+    GitUtil.#instance = this;
+  }
+
+  /** 싱글톤 객체 */
+  static getInstance() {
+    if (!GitUtil.#instance) {
+      throw new Error("GitUtil 인스턴스가 아직 생성되지 않았습니다. 객체를 먼저 생성하십시오.");
+    }
+    return GitUtil.#instance;
   }
 
   /** 현재 HEAD가 가리키는 브랜치의 커밋 해시를 반환 */
-  getCurrentCommitHash(rootPath) {
-    const headContent = this.readFile(this.headPath);
+  getCurrentCommitHash() {
+    const headContent = this.readFile(this.headPath).toString();
 
-    const branchName = headContent.slice(5); // 브랜치 경로 추출 ("ref: refs/heads/master"에서 경로만 추출)
-    const branchPath = path.join(this.gitPath, branchName); // 경로 저장
-    console.log(branchPath);
+    const branchName = headContent.slice(5).trim(); // "ref: refs/heads/master" → "refs/heads/master"
+    const branchPath = path.join(this.gitPath, branchName);
 
     if (!fs.existsSync(branchPath)) {
       throw new Error(`HEAD가 참조하는 브랜치 파일(${branchPath})이 존재하지 않습니다.`);
@@ -31,7 +44,6 @@ export default class GitUtil {
     const commitHash = fs.readFileSync(branchPath, 'utf-8').trim();
     return commitHash;
   }
-
 
   /** sha1 해시값을 반환 */
   getSha1Hash(content) {
@@ -49,7 +61,7 @@ export default class GitUtil {
     if (!fs.existsSync(filePath)) {
       throw new Error(`파일을 찾을 수 없습니다: ${filePath}`);
     }
-
     return fs.readFileSync(filePath);
   }
 }
+
