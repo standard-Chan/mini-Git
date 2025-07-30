@@ -8,8 +8,8 @@ export default class InitCommand {
 
   static initDirectories(rootPath) {
     const gitPath = path.join(rootPath, ".git");
-    const objectsPath = path.join(this.gitPath, "objects");
-    const refsPath = path.join(this.gitPath, "refs", "heads");
+    const objectsPath = path.join(gitPath, "objects");
+    const refsPath = path.join(gitPath, "refs", "heads");
 
     // 디렉토리 생성
     fs.mkdirSync(gitPath, { recursive: true });
@@ -24,10 +24,10 @@ export default class InitCommand {
 
   /** refs/heads의 branch 파일 생성 */
   static initBranchFile(refsHeadsPath) {
-    mkdirSync(refsHeadsPath, { recursive: true});
-    
-    const path = path.join(refsHeadsPath, InitCommand.INITIAL_BRANCH_NAME);
-    fs.writeFileSync(path, '');
+    fs.mkdirSync(refsHeadsPath, { recursive: true});
+
+    const branchPath = path.join(refsHeadsPath, InitCommand.INITIAL_BRANCH_NAME);
+    fs.writeFileSync(branchPath, '');
   }
 
   /** index 파일 생성 */
