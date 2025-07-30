@@ -13,7 +13,8 @@ export default class branchCommand {
     const branches = fs.readdirSync(this.refsHeadsPath);
 
     console.log('브랜치 목록:');
-    branches.forEach(branch => {console.log(`- ${branch}\n`);});
+    branches.forEach(branch => {console.log(`- ${branch}`);});
+    console.log();
   }
 
   /** refs/heads에 브랜치 파일 생성 */

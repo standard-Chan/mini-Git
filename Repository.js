@@ -51,13 +51,12 @@ export default class Repository {
   }
 
   status() {
-    console.log(this.gitUtil.readFile(this.indexPath));
     const indexLines = this.gitUtil.readFile(this.indexPath).split('\n').filter(e=>e);
 
     console.log('현재 스테이징된 파일들');
     indexLines.forEach(line => {
       const [fileMode, hash, fileName] = line.split(' ');
-      console.log(`-${fileName}`);
+      console.log(`- ${fileName} : ${hash}`);
     });
   }
 

@@ -21,6 +21,6 @@ export default class SwitchCommand {
     const newHeadContent = `ref: refs/heads/${branchName}\n`;
     fs.writeFileSync(this.headPath, newHeadContent);
 
-    console.log(`switch : HEAD가 '${branchName}' 브랜치를 가리키도록 변경되었습니다.`);
+    console.log(`switch : HEAD가 '${branchName}' 브랜치를 가리키도록 변경되었습니다.\n`);
   }
 }

@@ -26,7 +26,7 @@ export default class AddCommand {
     this.saveBlob(shaHash, compressed) // file 저장
     this.saveToIndex(shaHash, fileMode, filePath); // index 파일 정보 에 추가 (스태이징)
 
-    console.log(`add : '${filePath}"' 가 staged 되었습니다.`)
+    console.log(`add : '${filePath}' 가 staged 되었습니다. id: ${shaHash}\n`)
   }
 
   /** blob 파일 저장하기 */
