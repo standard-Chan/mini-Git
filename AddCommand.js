@@ -17,10 +17,10 @@ export default class AddCommand {
   }
 
   add(filePath) {
-    const fileContent = this.gitUtil.readFile(filePath);
     const fileMode = this.#getFileMode(filePath);
-    const shaHash = this.gitUtil.getSha1Hash(fileContent); // 해시값
 
+    const fileContent = this.gitUtil.readFile(filePath);
+    const shaHash = this.gitUtil.getSha1Hash(fileContent); // 해시값
     const compressed = this.compress(shaHash); // content 압축
 
     this.saveBlob(shaHash, compressed) // file 저장
