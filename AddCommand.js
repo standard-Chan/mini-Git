@@ -15,5 +15,8 @@ export default class AddCommand {
     /** 해당 경로의 파일을 읽기 */
     readFile(filePath) {}
 
-    /** */
+    /** 압축하기 */
+    compress() {
+      const header = `blob ${content.length}\0`;
+    }
 }

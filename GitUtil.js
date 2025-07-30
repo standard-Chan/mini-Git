@@ -18,7 +18,7 @@ export default class GitUtil {
 
   /** 현재 HEAD가 가리키는 브랜치의 커밋 해시를 반환 */
   getCurrentCommitHash(rootPath) {
-    const headContent = fs.readFileSync(this.headPath, 'utf-8').trim();
+    const headContent = this.readFile(this.headPath);
 
     const branchName = headContent.slice(5); // 브랜치 경로 추출 ("ref: refs/heads/master"에서 경로만 추출)
     const branchPath = path.join(this.gitPath, branchName); // 경로 저장
@@ -42,5 +42,14 @@ export default class GitUtil {
   compress(content) {
     const contentBuffer = Buffer.from(content, 'utf-8');
     return zlib.deflateSync(contentBuffer);
+  }
+
+  /** 해당 경로의 파일을 읽기 */
+  readFile(filePath) {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`파일을 찾을 수 없습니다: ${filePath}`);
+    }
+
+    return fs.readFileSync(filePath);
   }
 }
