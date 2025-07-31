@@ -16,17 +16,13 @@ export default class CommitCommand {
     this.gitUtil = GitUtil.getInstance();
   }
 
-  commit() {
-
-  }
-
-  /** Tree 객체 생성 */
+  /** Tree 객체 생성 후 root Hash 반환 */
   createTree() {
     const indexEntries = this.readIndex();
-
     const tree = this.convertEntriesToTree(indexEntries);
-    this.buildTree(tree);
+    const rootHash = this.buildTree(tree);
     this.clearIndex(); // 인덱스 파일 비우기
+    return rootHash;
   }
 
   /** index 파일을 읽고 파싱한다. [{fileMode, hash, filePath}, ... ]*/
@@ -80,7 +76,6 @@ export default class CommitCommand {
   }
 
   /** Tree 자료구조를 leaf 노드에서부터 올라오면서 Tree 의 content를 채운다.
-   * @param {*} tree tree에 들어갈 내용 정보를 저장할 tree 자료구조
    * @param {*} cur 현재 노드
   */
   buildTree(cur) {
@@ -89,26 +84,28 @@ export default class CommitCommand {
     // 자식 순회
     for (const child in cur) {
       if (child == 'content') continue;
-      if (cur[child].fileMode && cur[child].hash) { // 파일인 경우
-        cur.content += (`${FILE_MODE.REGULAR} ${cur[child].filename}\0${cur[child].hash}`);
+
+      const childNode = cur[child];
+      if (childNode.fileMode && childNode.hash) { // 파일인 경우
+        cur.content += (`${FILE_MODE.REGULAR} ${childNode.filename}\0${childNode.hash}`);
       }
       else { // 디렉토리인 경우
-        this.buildTree(cur[child]); // 하위 노드 먼저 방문하여 content 채우기
-
-        const hash = this.createTreeObject(child, cur.content);
+        const hash = this.buildTree(childNode); // 하위 노드 먼저 방문하여 content 채우기
         cur['content'] += (`${FILE_MODE.DIR} ${child}\0${hash}`);
       }
     }
 
-    return;
+    const hash = this.createTreeObject(cur.content);
+
+    return hash;
   }
 
   /** Tree 객체를 생성하고 저장한다. 이후 hash 값을 반환한다.*/
-  createTreeObject(filename, content) {
+  createTreeObject(content) {
     const hash = this.gitUtil.getSha1Hash(content);
     const compressed = this.gitUtil.compress(content);
     this.saveTreeObject(hash, compressed);
-    console.log(`- '${filename}'directory가 갱신되었습니다.`);
+    //console.log(`- '${filename}'directory가 갱신되었습니다.`);
     return hash;
   }
 

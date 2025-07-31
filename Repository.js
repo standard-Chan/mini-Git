@@ -64,7 +64,7 @@ export default class Repository {
 
   commit(message) {
     // index 읽고 tree 생성
-    this.commitCommand.createTree();
+    const rootHash = this.commitCommand.createTree();
     // 2. tree와 HEAD를 기반으로 commit object 생성
     // 3. HEAD 업데이트
   }

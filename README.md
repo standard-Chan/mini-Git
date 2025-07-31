@@ -95,29 +95,115 @@ $ git add <filePath>
 ## `commit`
 
 ### `내부 로직`
-구현이 상당히 어려웠다. 하위 디렉토리부터 생성해야하는 부분이 어려웠는데 구체적인 예시를 통해 이해해보자.
+
+하위 디렉토리부터 root 디렉토리까지 재귀적으로 Tree 객체를 생성합니다.
+
+1. .git/index 파일을 읽어 정보를 파싱
+
+```txt
+// .git/index
+
+100644 9872... a/b/test.txt
+100644 9872... a/c/test.txt
+```
+
+```js
+[
+  { fileMode: "100644", hash: "9872...", filePath: "a/b/test.txt" },
+  { fileMode: "100644", hash: "9872...", filePath: "a/c/test.txt" },
+];
+```
+
+index파일을 읽어옵니다.
+
+2. 위 배열 자료구조를 `Tree` 자료구조로 변환
+
+```js
+{
+  root: {
+    a: {
+      b: {
+        'test.txt': {
+          fileMode: '100644',
+          filename: 'test.txt',
+          hash: '9872...'
+        }
+      },
+      c: {
+        'test.txt': {
+          fileMode: '100644',
+          filename: 'test.txt',
+          hash: '9872...'
+        }
+      }
+    }
+  }
+}
+```
+
+중첩된 디렉토리 구조로 트리를 표현하고, leaf 노드의 파일인 경우에는 메타정보를 함께 저장합니다.
+
+3. Tree 자료구조를 하위 노드에서부터 읽으면서 Tree 객체를 저장
+
+```js
+
+  root: {
+    a: {
+      b: {
+          'test.txt': {
+            fileMode: '100644',
+            filename: 'test.txt',
+            hash: '9872...'
+          },
+          content: '100644 test.txt\0<9872...>'
+        },
+      c: {
+          'test.txt': {
+            fileMode: '100644',
+            filename: 'test.txt',
+            hash: '9872...'
+          },
+          content: '100644 test.txt\0<9872...>'
+        }
+      }
+    }
+```
+하위 디렉토리부터 읽으면서 content로 직렬화함과 동시에 Tree 객체를 만들어냅니다. 이후 만들어낸 Tree객체의 Hash값을 상위 노드로 전파시킵니다.
+
+위 자료를 예시로 들면, 
+1. b를 읽고 test.txt를 직렬화하여 content 생성
+2. b의 content를 읽어서 Hash값을 생성하고, zlib으로 압축하여 Tree 객체 생성 및 저장
+3. c도 위와 같은 과정을 거침
+4. a디렉토리에서 b, c에서 생성한 Hash를 사용하여 content 생성
+5. a의 content를 읽어서 Hash를 생성하고 zlib으로 압축한 후 Tree 객체 생성 및 저장
+6. root 디렉토리에 a에서 생성한 Hash르르 사용하여 content를 생성
+7. root 의 hash를 생성 및 파일 저장
+
+---
+
+생성해야하는 부분이 어려웠는데 구체적인 예시를 통해 이해해보자.
 
 다음 파일들을 add하여 staging 시켰다고 가정해 봅니다.
 
 ```js
-'a/b/c/test.txt'
-'a/b/c/a.txt'
-'a/b/k/b.txt'
+"a/b/c/test.txt";
+"a/b/c/a.txt";
+"a/b/k/b.txt";
 ```
 
 이때, Tree 객체를 만드는 순서는 반드시 하위 디렉토리부터 처리되어야하므로,
- a/b/c -> a/b/k -> a/b -> a 순으로 처리되어야합니다.
+a/b/c -> a/b/k -> a/b -> a 순으로 처리되어야합니다.
 
 즉 다음 순서로 처리되어야합니다.
 
 ```js
-'a/b/c'
-'a/b/c/test.txt'
-'a/b/c/a.txt'
-'a/b/k'
-'a/b/k/b.txt'
-'a/b'
-'a'
+"a/b/c";
+"a/b/c/test.txt";
+"a/b/c/a.txt";
+"a/b/k";
+"a/b/k/b.txt";
+"a/b";
+"a";
 ```
 
 **브루트포스 방식을 사용하여 Tree 객체를 하위 디렉토리 순으로 생성시켰습니다.**
@@ -163,17 +249,16 @@ path = [a, a/b, a/b/c, a/b/c/test.txt];
 repo.init();
 
 repo.branch();
-repo.branch('새로운 브랜치!');
+repo.branch("새로운 브랜치!");
 repo.branch();
-repo.switch('master');
-repo.add('test.txt');
+repo.switch("master");
+repo.add("test.txt");
 repo.status();
 ```
 
 input을 받는 모듈을 구현하지 못해서 코드로 출력한 결과입니다.
 
 ![출력](https://private-user-images.githubusercontent.com/95221819/472631919-5c36467a-b99d-4114-ab06-acce4fddd9b5.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTM4OTY3ODEsIm5iZiI6MTc1Mzg5NjQ4MSwicGF0aCI6Ii85NTIyMTgxOS80NzI2MzE5MTktNWMzNjQ2N2EtYjk5ZC00MTE0LWFiMDYtYWNjZTRmZGRkOWI1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA3MzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNzMwVDE3MjgwMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWMxMGM2Njc1NTQxNmExNmVmNmMyNzg3MDJkNTU1MTQ0ZmRjYjFiMDczNjkyMzYwNDMzNzFiODU0ZWEyMmQ4NWEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.VBdB_PYwcx0zqjaYDCXHZOx5Smma4VGF3UdcoXqm0UQ)
-
 
 # 기타
 
@@ -189,8 +274,9 @@ input을 받는 모듈을 구현하지 못해서 코드로 출력한 결과입�
 # `git clone`
 
 git clone도 직접 구현해보려고 알아보았다. 하지만 다음 2가지 문제로 인해서 clone을 JS코드로 직접 구현하는 것에 어려움을 느꼈다.
+
 1. GitHub의 HTTPS 링크에 보낸 요청은 git에서 보낸 요청만 허용된다.
-  그 외의 경우에는 redirect 시키거나 에러를 발생시킨다
+   그 외의 경우에는 redirect 시키거나 에러를 발생시킨다
 2. GitHub가 전달하는 .git 데이터는 pack 등의 파일로 압축되어 있다. 이를 디코딩하기가 어렵다.
 
 그래서 실제 git clone 을 그대로 구현하는 것은 어렵다고 판단하여, git clone의 목적에 맞게 현재 자신의 .git 파일을 외부에 공유하고 가져올 수 있는 기능을 구현하였다.
@@ -200,6 +286,7 @@ git clone도 직접 구현해보려고 알아보았다. 하지만 다음 2가지
 # 어려운점
 
 깊이 우선 탐색으로 JS 객체를 순회할때, 해당 노드의 이름을 모르는 문제가 발생했다.
+
 ```js
 a : {
   b: {'test.txt' : {fileMode, hash}},
@@ -207,6 +294,7 @@ a : {
 }
 let cur = a;
 ```
+
 여기에서 `cur`은 내부 값 b와 c를 가지고 있지만, cur 자체의 이름인 a를 모른다. {b:, c:}에 대한 참조값이 cur에 저장되어있기 때문이다.
 
 ```js
@@ -227,6 +315,7 @@ let cur = a;
     return `${FILE_MODE.DIR} ${@@@@@}\0${hash}`
   }
 ```
+
 위 코드 가장 아래에 있는 `${@@@@@}` 에 현재 cur에 해당하는 디렉토리 이름을 넣어야한다. 하지만 cur은 현재 이름 정보를 가지고 있지 않다.
 따라서 재귀로 순회할 때 현재 `cur`의 정보를 반환하는게 아니라, 한칸 아래의 `child`정보를 반환해야한다.
 
