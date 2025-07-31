@@ -25,6 +25,47 @@ export default class CommitCommand {
     return rootHash;
   }
 
+  /** commit 객체 생성 */
+  createCommit(message = "null", author = "null", rootHash) {
+    // 현재 커밋 객체 해시
+    const curCommitHash = this.gitUtil.getCurrentCommitHash();
+
+    const content = this.createCommitContent(message, author, rootHash, curCommitHash);
+
+    const commitHash = this.gitUtil.getSha1Hash(content);
+    const compressed = this.gitUtil.compress(content);
+    this.gitUtil.saveObject(commitHash, compressed); // 저장
+
+    console.log(`커밋 완료 - ${commitHash}`);
+    return commitHash;
+  }
+
+  /** Head 커밋 객체 정보 업데이트 */
+  updateHead(commitHash) {
+    const headRef = this.gitUtil.readFile(this.headPath, 'utf-8').trim();
+
+    if (headRef.startsWith("ref:")) {
+      const refPath = path.join(this.gitPath, headRef.slice(5));
+      console.log(refPath);
+      
+      fs.writeFileSync(refPath, commitHash);
+    }
+  }
+
+  /** commit 내용 생성 */
+  createCommitContent(message, author, rootHash, curCommitHash) {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const timezone = '+0900';
+
+    const content = `tree ${rootHash}\n
+                  ...(curCommitHash ? [parent ${curCommitHash}] : [])\n
+                  author ${author} ${timestamp} ${timezone}\n
+                  committer ${author} ${timestamp} ${timezone}\n
+                  ${message}`;
+
+    return `commit ${content.length}\0${content}`;
+  }
+
   /** index 파일을 읽고 파싱한다. [{fileMode, hash, filePath}, ... ]*/
   readIndex() {
     let indexEntries = []; // [{ fileMode, hash, filePath }, ...]
@@ -104,24 +145,12 @@ export default class CommitCommand {
   createTreeObject(content) {
     const hash = this.gitUtil.getSha1Hash(content);
     const compressed = this.gitUtil.compress(content);
-    this.saveTreeObject(hash, compressed);
+    this.gitUtil.saveObject(hash, compressed);
     //console.log(`- '${filename}'directory가 갱신되었습니다.`);
     return hash;
   }
 
-  /** Tree 객체 저장 */
-  saveTreeObject(filename, content) {
-    // 앞 2글자로 디렉토리 생성하기
-    const dir = path.join(this.objectsPath, filename.slice(0, 2));
-    const TreePath = path.join(dir, filename);
 
-    // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값})
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(TreePath, content);
-  }
 
   clearIndex() {
     fs.writeFileSync(this.indexPath, '');

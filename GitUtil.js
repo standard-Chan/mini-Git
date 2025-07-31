@@ -32,7 +32,7 @@ export default class GitUtil {
 
   /** 현재 HEAD가 가리키는 브랜치의 커밋 해시를 반환 */
   getCurrentCommitHash() {
-    const headContent = this.readFile(this.headPath).toString();
+    const headContent = this.readFile(this.headPath, 'utf-8').trim();
 
     const branchName = headContent.slice(5).trim(); // "ref: refs/heads/master" → "refs/heads/master"
     const branchPath = path.join(this.gitPath, branchName);
@@ -62,6 +62,20 @@ export default class GitUtil {
       throw new Error(`파일을 찾을 수 없습니다: ${filePath}`);
     }
     return fs.readFileSync(filePath, 'utf-8');
+  }
+
+    /** 객체 저장 */
+  saveObject(filename, content) {
+    // 앞 2글자로 디렉토리 생성하기
+    const dir = path.join(this.objectsPath, filename.slice(0, 2));
+    const TreePath = path.join(dir, filename);
+
+    // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값})
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(TreePath, content);
   }
 }
 

@@ -62,11 +62,10 @@ export default class Repository {
     });
   }
 
-  commit(message) {
-    // index 읽고 tree 생성
+  commit(message='null', author='null') {
     const rootHash = this.commitCommand.createTree();
-    // 2. tree와 HEAD를 기반으로 commit object 생성
-    // 3. HEAD 업데이트
+    const commitHash = this.commitCommand.createCommit(message, author, rootHash);
+    this.commitCommand.updateHead(commitHash)
   }
 
   log() {

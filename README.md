@@ -325,17 +325,16 @@ let cur = a;
   // 기존 코드
 
   /** Tree 자료구조를 leaf 노드에서부터 올라오면서 Tree 의 content를 채운다.
-   * @param {*} tree tree에 들어갈 내용 정보를 저장할 tree 자료구조
    * @param {*} cur 현재 노드
   */
-  insertContentIntoTree(tree, cur) {
+  insertContentIntoTree(cur) {
 
     if (cur.fileMode && cur.hash) { // 파일인경우
       return `${FILE_MODE.REGULAR} ${cur.filename}\0${cur.hash}`;
     }
     for (const child in cur) {
       if (!cur.child['content']) cur['content'] = '';
-      cur['content'].join(this.insertContentIntoTree(tree, cur[child]));
+      cur['content'].join(this.insertContentIntoTree(cur[child]));
     }
 
     // 해당 디렉토리 내용을 이용하여 hash 를 생성한다.
@@ -351,5 +350,34 @@ let cur = a;
 
   createTreeObject(hash, content) {
     this.saveTreeObject(hash, content);
+  }
+```
+
+```js
+// 수정한 코드
+
+  /** Tree 자료구조를 leaf 노드에서부터 올라오면서 Tree 의 content를 채운다.
+   * @param {*} cur 현재 노드
+  */
+  buildTree(cur) {
+    (!cur.content) ? cur.content = '' : cur.content += ('\n'); // 없으면 만들고 있으면 한줄 띄우기
+
+    // 자식 순회
+    for (const child in cur) {
+      if (child == 'content') continue;
+
+      const childNode = cur[child];
+      if (childNode.fileMode && childNode.hash) { // 파일인 경우
+        cur.content += (`${FILE_MODE.REGULAR} ${childNode.filename}\0${childNode.hash}`);
+      }
+      else { // 디렉토리인 경우
+        const hash = this.buildTree(childNode); // 하위 노드 먼저 방문하여 content 채우기
+        cur['content'] += (`${FILE_MODE.DIR} ${child}\0${hash}`);
+      }
+    }
+
+    const hash = this.createTreeObject(cur.content);
+
+    return hash;
   }
 ```
