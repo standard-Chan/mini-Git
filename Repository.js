@@ -6,6 +6,7 @@ import GitUtil from './GitUtil.js';
 import SwitchCommand from './SwitchCommand.js';
 import AddCommand from './AddCommand.js';
 import CommitCommand from './CommitCommand.js';
+import LogCommand from './LogCommand.js';
 
 export default class Repository {
   constructor(rootPath) {
@@ -22,6 +23,7 @@ export default class Repository {
     this.switchCommand = new SwitchCommand(rootPath);
     this.addCommand = new AddCommand(rootPath);
     this.commitCommand = new CommitCommand(rootPath);
+    this.logCommand = new LogCommand(rootPath);
   }
 
   /** git 초기화 */
@@ -62,13 +64,13 @@ export default class Repository {
     });
   }
 
-  commit(message='null', author='null') {
+  commit(message='null', author='null', email) {
     const rootHash = this.commitCommand.createTree();
-    const commitHash = this.commitCommand.createCommit(message, author, rootHash);
+    const commitHash = this.commitCommand.createCommit(message, author, email, rootHash);
     this.commitCommand.updateHead(commitHash)
   }
 
   log() {
-    // HEAD에서 커밋 거슬러 올라가며 메시지 출력
+    this.logCommand.log();
   }
 }

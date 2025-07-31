@@ -26,11 +26,11 @@ export default class CommitCommand {
   }
 
   /** commit 객체 생성 */
-  createCommit(message = "null", author = "null", rootHash) {
+  createCommit(message = "empty", author = "empty", email = "temp@gmail.com", rootHash) {
     // 현재 커밋 객체 해시
     const curCommitHash = this.gitUtil.getCurrentCommitHash();
 
-    const content = this.createCommitContent(message, author, rootHash, curCommitHash);
+    const content = this.createCommitContent(message, author, email, rootHash, curCommitHash);
 
     const commitHash = this.gitUtil.getSha1Hash(content);
     const compressed = this.gitUtil.compress(content);
@@ -47,21 +47,24 @@ export default class CommitCommand {
     if (headRef.startsWith("ref:")) {
       const refPath = path.join(this.gitPath, headRef.slice(5));
       console.log(refPath);
-      
+
       fs.writeFileSync(refPath, commitHash);
     }
   }
 
   /** commit 내용 생성 */
-  createCommitContent(message, author, rootHash, curCommitHash) {
+  createCommitContent(commitMessage, author, email, rootHash, curCommitHash) {
     const timestamp = Math.floor(Date.now() / 1000);
     const timezone = '+0900';
 
-    const content = `tree ${rootHash}\n
-                  ...(curCommitHash ? [parent ${curCommitHash}] : [])\n
-                  author ${author} ${timestamp} ${timezone}\n
-                  committer ${author} ${timestamp} ${timezone}\n
-                  ${message}`;
+    const content = [
+      `tree ${rootHash}`,
+      curCommitHash ? `parent ${curCommitHash}` : '',
+      `author ${author} <${email}> ${timestamp} ${timezone}`,
+      `committer ${author} <${email}> ${timestamp} ${timezone}`,
+      '',
+      commitMessage
+    ].filter(Boolean).join('\n');
 
     return `commit ${content.length}\0${content}`;
   }
