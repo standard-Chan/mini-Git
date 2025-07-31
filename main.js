@@ -1,7 +1,9 @@
+import GitPaths from "./GitPaths.js";
 import GitUtil from "./GitUtil.js";
 import Repository from "./Repository.js";
 
 new GitUtil('temp');
+new GitPaths('temp');
 const repo = new Repository('temp');
 repo.init();
 

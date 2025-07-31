@@ -6,16 +6,12 @@ import SwitchCommand from './SwitchCommand.js';
 import AddCommand from './AddCommand.js';
 import CommitCommand from './CommitCommand.js';
 import LogCommand from './LogCommand.js';
+import GitPaths from './GitPaths.js';
 
 export default class Repository {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
+    this.gitPaths = GitPaths.of(rootPath);
 
     this.gitUtil = GitUtil.getInstance();
     this.branchCommand = new branchCommand(rootPath);
@@ -28,9 +24,9 @@ export default class Repository {
   /** git 초기화 */
   init() {
     InitCommand.initDirectories(this.rootPath);
-    InitCommand.initHeadFile(this.headPath);
-    InitCommand.initIndexFile(this.indexPath);
-    InitCommand.initBranchFile(this.refsHeadsPath);
+    InitCommand.initHeadFile(this.gitPaths.headPath);
+    InitCommand.initIndexFile(this.gitPaths.indexPath);
+    InitCommand.initBranchFile(this.gitPaths.refsHeadsPath);
   }
 
   branch(name = null, option = null) {
@@ -54,7 +50,7 @@ export default class Repository {
   }
 
   status() {
-    const indexLines = this.gitUtil.readFile(this.indexPath).split('\n').filter(e=>e);
+    const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath).split('\n').filter(e=>e);
 
     console.log('현재 스테이징된 파일들');
     indexLines.forEach(line => {

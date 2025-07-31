@@ -1,18 +1,13 @@
 import path from 'path';
 import fs from 'fs';
 import GitUtil from './GitUtil.js';
+import GitPaths from './GitPaths.js';
 import { FILE_MODE } from './constants.js';
 
 export default class AddCommand {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
-
+    this.gitPaths = GitPaths.of(rootPath);
     this.gitUtil = GitUtil.getInstance();
   }
 
@@ -39,7 +34,7 @@ export default class AddCommand {
   /** blob 파일 저장하기 */
   saveBlob(filename, content) {
     // 앞 2글자로 디렉토리 생성하기
-    const blobDir = path.join(this.objectsPath, filename.slice(0, 2));
+    const blobDir = path.join(this.gitPaths.objectsPath, filename.slice(0, 2));
     const blobPath = path.join(blobDir, filename);
 
     // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값})
@@ -73,10 +68,8 @@ export default class AddCommand {
    * 저장 형태 : {파일모드} {해시값} {루트 - 상대경로}
   */
   saveToIndex(shaHash, fileMode, filePath) {
-
     const indexEntry = `${fileMode} ${shaHash} ${filePath}\n`;
-
-    fs.appendFileSync(this.indexPath, indexEntry);
+    fs.appendFileSync(this.gitPaths.indexPath, indexEntry);
   }
 
   /** 내용을 압축하여 반환 */

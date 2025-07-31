@@ -1,18 +1,13 @@
 import path from 'path';
 import fs from 'fs';
 import GitUtil from './GitUtil.js';
+import GitPaths from './GitPaths.js';
 import { FILE_MODE } from './constants.js';
 
 export default class CommitCommand {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
-
+    this.gitPaths = GitPaths.of(rootPath);
     this.gitUtil = GitUtil.getInstance();
   }
 
@@ -42,11 +37,10 @@ export default class CommitCommand {
 
   /** Head 커밋 객체 정보 업데이트 */
   updateHead(commitHash) {
-    const headRef = this.gitUtil.readFile(this.headPath, 'utf-8').trim();
+    const headRef = this.gitUtil.readFile(this.gitPaths.headPath, 'utf-8').trim();
 
     if (headRef.startsWith("ref:")) {
-      const refPath = path.join(this.gitPath, headRef.slice(5));
-
+      const refPath = path.join(this.gitPaths.gitPath, headRef.slice(5));
       fs.writeFileSync(refPath, commitHash);
     }
   }
@@ -71,7 +65,7 @@ export default class CommitCommand {
   /** index 파일을 읽고 파싱한다. [{fileMode, hash, filePath}, ... ]*/
   readIndex() {
     let indexEntries = []; // [{ fileMode, hash, filePath }, ...]
-    const indexLines = this.gitUtil.readFile(this.indexPath, 'utf-8')
+    const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath, 'utf-8')
       .trim()
       .split('\n')
       .filter(Boolean);
@@ -152,10 +146,8 @@ export default class CommitCommand {
     return hash;
   }
 
-
-
   clearIndex() {
-    fs.writeFileSync(this.indexPath, '');
+    fs.writeFileSync(this.gitPaths.indexPath, '');
     console.log("커밋이 성공하여, 스테이징된 파일들을 지웁니다.");
   }
 }
