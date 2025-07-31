@@ -46,7 +46,6 @@ export default class CommitCommand {
 
     if (headRef.startsWith("ref:")) {
       const refPath = path.join(this.gitPath, headRef.slice(5));
-      console.log(refPath);
 
       fs.writeFileSync(refPath, commitHash);
     }

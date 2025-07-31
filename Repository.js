@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import InitCommand from './InitCommand.js';
 import branchCommand from './BranchCommand.js';
 import GitUtil from './GitUtil.js';
