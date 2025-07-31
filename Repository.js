@@ -5,6 +5,7 @@ import branchCommand from './BranchCommand.js';
 import GitUtil from './GitUtil.js';
 import SwitchCommand from './SwitchCommand.js';
 import AddCommand from './AddCommand.js';
+import CommitCommand from './CommitCommand.js';
 
 export default class Repository {
   constructor(rootPath) {
@@ -20,6 +21,7 @@ export default class Repository {
     this.branchCommand = new branchCommand(rootPath);
     this.switchCommand = new SwitchCommand(rootPath);
     this.addCommand = new AddCommand(rootPath);
+    this.commitCommand = new CommitCommand(rootPath);
   }
 
   /** git 초기화 */
@@ -61,7 +63,8 @@ export default class Repository {
   }
 
   commit(message) {
-    // 1. index 읽고 tree 생성
+    // index 읽고 tree 생성
+    this.commitCommand.createTree();
     // 2. tree와 HEAD를 기반으로 commit object 생성
     // 3. HEAD 업데이트
   }

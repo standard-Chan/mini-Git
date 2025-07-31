@@ -10,5 +10,9 @@ repo.branch('새로운 브랜치!');
 repo.branch();
 repo.switch('master');
 repo.add('test.txt');
+repo.add('a/b/test.txt');
+repo.add('a/c/test.txt');
 
+repo.status();
+repo.commit('');
 repo.status();

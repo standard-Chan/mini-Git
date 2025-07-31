@@ -3,9 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import { createHash } from 'crypto';
-import AddCommand from '../AddCommand.js';
-import GitUtil from '../GitUtil.js';
-import { FILE_MODE } from '../constants.js';
+import AddCommand from './AddCommand.js';
+import GitUtil from './GitUtil.js';
+import { FILE_MODE } from './constants.js';
 
 describe('AddCommand 테스트', function() {
   let addCommand;

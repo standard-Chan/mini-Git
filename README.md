@@ -197,3 +197,70 @@ git clone도 직접 구현해보려고 알아보았다. 하지만 다음 2가지
 
 그래서 외부 .git 파일을 가져오는 것이 아니라 local의 git 파일을 복사하여 가져오는 것으로 구현하려고 한다.
 
+# 어려운점
+
+깊이 우선 탐색으로 JS 객체를 순회할때, 해당 노드의 이름을 모르는 문제가 발생했다.
+```js
+a : {
+  b: {'test.txt' : {fileMode, hash}},
+  c: {'test2.txt' : {fileMode, hash}}
+}
+let cur = a;
+```
+여기에서 `cur`은 내부 값 b와 c를 가지고 있지만, cur 자체의 이름인 a를 모른다. {b:, c:}에 대한 참조값이 cur에 저장되어있기 때문이다.
+
+```js
+  insertContentIntoTree(tree, cur) {
+
+    // 파일인경우
+    ...
+
+    for (const child of cur) {
+      if (!cur['content']) cur['content'] = '';
+      cur['content'].join(this.insertContentIntoTree(tree, cur));
+    }
+    // 해당 디렉토리 내용을 이용하여 hash 를 생성한다.
+    ...
+
+    // Tree 객체를 생성하고 저장한다.
+    this.createTreeObject(hash, compressed);
+    return `${FILE_MODE.DIR} ${@@@@@}\0${hash}`
+  }
+```
+위 코드 가장 아래에 있는 `${@@@@@}` 에 현재 cur에 해당하는 디렉토리 이름을 넣어야한다. 하지만 cur은 현재 이름 정보를 가지고 있지 않다.
+따라서 재귀로 순회할 때 현재 `cur`의 정보를 반환하는게 아니라, 한칸 아래의 `child`정보를 반환해야한다.
+
+아래와 같이 `child 정보`를 반환하도록 수정하였다.
+
+```js
+  // 기존 코드
+
+  /** Tree 자료구조를 leaf 노드에서부터 올라오면서 Tree 의 content를 채운다.
+   * @param {*} tree tree에 들어갈 내용 정보를 저장할 tree 자료구조
+   * @param {*} cur 현재 노드
+  */
+  insertContentIntoTree(tree, cur) {
+
+    if (cur.fileMode && cur.hash) { // 파일인경우
+      return `${FILE_MODE.REGULAR} ${cur.filename}\0${cur.hash}`;
+    }
+    for (const child in cur) {
+      if (!cur.child['content']) cur['content'] = '';
+      cur['content'].join(this.insertContentIntoTree(tree, cur[child]));
+    }
+
+    // 해당 디렉토리 내용을 이용하여 hash 를 생성한다.
+    const hash = this.gitUtil.getSha1Hash(cur['content']);
+    const compressed = this.gitUtil.compress(cur['content']);
+    console.log(`콘텐츠 : ${cur['content']}`);
+
+
+    // Tree 객체를 생성하고 저장한다.
+    this.createTreeObject(hash, compressed);
+    return `${FILE_MODE.DIR} \0${hash}`
+  }
+
+  createTreeObject(hash, content) {
+    this.saveTreeObject(hash, content);
+  }
+```
