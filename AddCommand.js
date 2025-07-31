@@ -19,9 +19,16 @@ export default class AddCommand {
   add(filePath) {
     const fileMode = this.#getFileMode(filePath);
 
+    // 디렉토리인 경우 특별 처리
+    if (fileMode === FILE_MODE.DIR) {
+      // 디렉토리의 경우 내용을 빈 문자열로 처리하거나 별도 로직 필요
+      console.log(`디렉토리 '${filePath}'는 현재 지원되지 않습니다.\n`);
+      return;
+    }
+
     const fileContent = this.gitUtil.readFile(filePath);
     const shaHash = this.gitUtil.getSha1Hash(fileContent); // 해시값
-    const compressed = this.compress(shaHash); // content 압축
+    const compressed = this.compress(fileContent); // content 압축
 
     this.saveBlob(shaHash, compressed) // file 저장
     this.saveToIndex(shaHash, fileMode, filePath); // index 파일 정보 에 추가 (스태이징)

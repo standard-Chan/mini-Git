@@ -6,7 +6,7 @@ const repo = new Repository('temp');
 repo.init();
 
 repo.branch();
-repo.branch('new2');
+repo.branch('새로운 브랜치!');
 repo.branch();
 repo.switch('master');
 repo.add('test.txt');

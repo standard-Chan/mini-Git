@@ -1,3 +1,8 @@
 temp
 test.txt
 test/
+node_modules/
+설계.pdf
+package-lock.json
+package.json
+.gitignore

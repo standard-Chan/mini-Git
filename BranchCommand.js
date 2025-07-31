@@ -28,5 +28,7 @@ export default class branchCommand {
     }
     
     fs.writeFileSync(newBranchPath, commitHash + '\n');
+    console.log(`${name} 브랜치를 생성하였습니다.`);
   }
+  
 }
