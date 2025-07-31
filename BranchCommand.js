@@ -20,6 +20,13 @@ export default class branchCommand {
   /** refs/heads에 브랜치 파일 생성 */
   createBranch(name, commitHash) {
     const newBranchPath = path.join(this.refsHeadsPath, name);
+    const branchDir = path.dirname(newBranchPath);
+    
+    // 브랜치 디렉토리가 존재하지 않으면 생성
+    if (!fs.existsSync(branchDir)) {
+      fs.mkdirSync(branchDir, { recursive: true });
+    }
+    
     fs.writeFileSync(newBranchPath, commitHash + '\n');
   }
 }
