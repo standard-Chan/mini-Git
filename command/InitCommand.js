@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import GitPaths from '../GitPaths.js';
 
 export default class InitCommand {
   static INITIAL_BRANCH_NAME = 'master';
@@ -7,14 +8,13 @@ export default class InitCommand {
   constructor() {}
 
   static initDirectories(rootPath) {
-    const gitPath = path.join(rootPath, ".git");
-    const objectsPath = path.join(gitPath, "objects");
-    const refsPath = path.join(gitPath, "refs", "heads");
+    
+    this.gitPaths = GitPaths.of(rootPath);
 
     // 디렉토리 생성
-    fs.mkdirSync(gitPath, { recursive: true });
-    fs.mkdirSync(objectsPath, { recursive: true });
-    fs.mkdirSync(refsPath, { recursive: true });
+    fs.mkdirSync(this.gitPaths.gitPath, { recursive: true });
+    fs.mkdirSync(this.gitPaths.objectsPath, { recursive: true });
+    fs.mkdirSync(this.gitPaths.refsPath, { recursive: true });
   }
 
   /** HEAD 파일 생성 */

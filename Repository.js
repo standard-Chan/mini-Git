@@ -29,7 +29,6 @@ export default class Repository {
   }
 
   branch(name = null, option = null) {
-
     if (!name) {
       this.branchCommand.printBranchList();  // 브랜치 목록 출력
       return;

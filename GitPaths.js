@@ -9,6 +9,7 @@ export default class GitPaths {
     this.headPath = path.join(this.gitPath, "HEAD");
     this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
     this.indexPath = path.join(this.gitPath, "index");
+    this.refsPath = path.join(this.gitPath, "refs", "heads");
   }
 
   static #cache = new Map();
