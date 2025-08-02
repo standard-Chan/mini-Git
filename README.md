@@ -220,20 +220,6 @@ input을 받는 모듈을 구현하지 못해서 코드로 출력한 결과입�
 
 ---
 
-# `git clone`
-
-git clone도 직접 구현해보려고 알아보았다. 하지만 다음 2가지 문제로 인해서 clone을 JS코드로 직접 구현하는 것에 어려움을 느꼈다.
-
-1. GitHub의 HTTPS 링크에 보낸 요청은 git에서 보낸 요청만 허용된다.
-   그 외의 경우에는 redirect 시키거나 에러를 발생시킨다
-2. GitHub가 전달하는 .git 데이터는 pack 등의 파일로 압축되어 있다. 이를 디코딩하기가 어렵다.
-
-그래서 실제 git clone 을 그대로 구현하는 것은 어렵다고 판단하여, git clone의 목적에 맞게 현재 자신의 .git 파일을 외부에 공유하고 가져올 수 있는 기능을 구현하였다.
-
-그래서 외부 .git 파일을 가져오는 것이 아니라 local의 git 파일을 복사하여 가져오는 것으로 구현하려고 한다.
-
----
-
 # 트러블 슈팅
 
 ## 알고리즘
@@ -333,78 +319,3 @@ let cur = a;
     return hash;
   }
 ```
-
---- 
-# 2일차
-
-# 중복 코드 제거
-```js
-  constructor(rootPath) {
-    this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
-
-    this.gitUtil = GitUtil.getInstance();
-  }
-```
-생성자에 경로를 저장시키는데, 매 클래스별로 중복되는 코드가 많았다. 이를 묶어서 공용으로 사용할 필요가 있어보였다.
-
-크게 2가지 방법이 있다.
-## `함수`
-```js
-function getGitPaths(rootPath) {
-  const gitPath = path.join(rootPath, ".git");
-
-  return {
-    rootPath,
-    gitPath,
-    objectsPath: path.join(gitPath, "objects"),
-    headPath: path.join(gitPath, "HEAD"),
-    refsHeadsPath: path.join(gitPath, "refs", "heads"),
-    indexPath: path.join(gitPath, "index"),
-  };
-}
-```
-```js
-const paths = getGitPaths('/my/project');
-console.log(paths.indexPath);
-```
-
-위처럼 함수형으로 묶어서 쉽게 사용이 가능하다. 하지만 매개변수에 매번 값을 넣어줘야하고, 이 값을 기억해야하는 것에 불편함이 있을 수 있다.
-
-## `팩토리 메서드`
-```js
-class GitPaths {
-  constructor(rootPath) {
-    this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
-  }
-
-  static #cache = new Map();
-
-  static of(path) {
-    if (!this.#cache.has(path)) {
-      this.#cache.set(path, new GitPaths(path));
-    }
-    return this.#cache.get(path);
-  }
-}
-```
-```js
-const paths = getGitPaths('/my/project');
-console.log(paths.indexPath);
-```
-
-동일한 정보를 담는 여러 인스턴스가 필요할때 좋은 방법이다. 마치 캐시처럼 꺼내서 사용할 수 있다. 또한 static으로 한번만 초기화시키면 전역적으로 사용이 가능하기 때문에 편리하다.
-변수 이름 뿐만 아니라 Map을 통해 keyword로 접근이 가능해서, 더 가독성 높은 코드를 만들어낼 수 있다.
-
-내 코드에서는 여러 인스턴스가 필요하지 않기때문에 위구조를 사용하지 않고 단순하게 static 클래스로 정의하였다.
