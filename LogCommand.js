@@ -67,13 +67,11 @@ export default class LogCommand {
       console.log(`날    짜  : ${dateStr} ${timezone}`);
       console.log(`커밋 메시지\n    ${messageLines.join('\n    ')}\n`);
 
-
-
-      // 8. 다음 커밋 (parent)
+      // 다음 커밋 (parent)
       if (parentLine) {
         currentHash = parentLine.split(' ')[1];
-      } else {
-        break; // 최초 커밋이면 parent 없음
+      } else { // 첫 커밋인 경우
+        break;
       }
     }
   }

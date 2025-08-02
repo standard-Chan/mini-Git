@@ -45,6 +45,13 @@ export default class GitUtil {
     return commitHash;
   }
 
+  getCurrentBranch() {
+    const headContent = this.readFile(this.headPath, 'utf-8').trim();
+    const branchPath = headContent.slice(5).trim();
+
+    return branchPath.slice(branchPath.lastIndexOf('/')+1);
+  }
+
   /** sha1 해시값을 반환 */
   getSha1Hash(content) {
     return createHash('sha1').update(content).digest('hex');
