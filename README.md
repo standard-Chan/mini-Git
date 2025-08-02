@@ -12,7 +12,31 @@ JS로 구현한 git입니다.
 - `log`: 커밋 로그를 출력할 때
 - `switch`: 브랜치를 이동할 때
 
-# 명령어 작동 방식
+### `git help`
+```text
+사용 가능한 Git 명령어:
+
+  git init                           - Git 저장소 초기화
+  git add <파일경로>                  - 파일을 스테이징 영역에 추가
+  git commit "<메시지>"           - 변경사항 커밋
+  git commit "<메시지>" --author "이름 <이메일>" - 작성자 정보와 함께 커밋
+  git branch                         - 브랜치 목록 보기
+  git branch <브랜치명>               - 새 브랜치 생성
+  git switch <브랜치명>               - 브랜치 전환
+  git status                         - 현재 상태 확인
+  git log                           - 커밋 로그 보기
+  git help                          - 도움말 보기
+  git exit 또는 git quit             - CLI 종료
+
+예시:
+  $ git init
+  $ git add test.txt
+  $ git commit "첫 번째 커밋"
+  $ git branch feature
+  $ git switch feature
+```
+
+# 명령어 작동 설명
 
 사용할 수 있는 명령어입니다.
 
