@@ -1,11 +1,10 @@
-import path from 'path';
-import InitCommand from './InitCommand.js';
-import branchCommand from './BranchCommand.js';
+import InitCommand from './command/InitCommand.js';
+import branchCommand from './command/BranchCommand.js';
 import GitUtil from './GitUtil.js';
-import SwitchCommand from './SwitchCommand.js';
-import AddCommand from './AddCommand.js';
-import CommitCommand from './CommitCommand.js';
-import LogCommand from './LogCommand.js';
+import SwitchCommand from './command/SwitchCommand.js';
+import AddCommand from './command/AddCommand.js';
+import CommitCommand from './command/CommitCommand.js';
+import LogCommand from './command/LogCommand.js';
 import GitPaths from './GitPaths.js';
 
 export default class Repository {

@@ -2,8 +2,8 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import BranchCommand from './BranchCommand.js';
-import Repository from './Repository.js';
-import GitUtil from './GitUtil.js';
+import Repository from '../Repository.js';
+import GitUtil from '../GitUtil.js';
 
 describe('BranchCommand 테스트', function() {
   let branchCommand;

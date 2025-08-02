@@ -4,8 +4,8 @@ import path from 'path';
 import zlib from 'zlib';
 import { createHash } from 'crypto';
 import CommitCommand from './CommitCommand.js';
-import GitUtil from './GitUtil.js';
-import { FILE_MODE } from './constants.js';
+import GitUtil from '../GitUtil.js';
+import { FILE_MODE } from '../constants.js';
 
 describe('CommitCommand 테스트', function() {
   let commitCommand;

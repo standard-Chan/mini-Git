@@ -1,7 +1,7 @@
 import path from 'path';
 import zlib from 'zlib';
 import fs from 'fs';
-import GitUtil from './GitUtil.js';
+import GitUtil from '../GitUtil.js';
 
 export default class LogCommand {
   constructor(rootPath) {

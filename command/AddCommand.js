@@ -1,8 +1,8 @@
 import path from 'path';
 import fs from 'fs';
-import GitUtil from './GitUtil.js';
-import GitPaths from './GitPaths.js';
-import { FILE_MODE } from './constants.js';
+import GitUtil from '../GitUtil.js';
+import GitPaths from '../GitPaths.js';
+import { FILE_MODE } from '../constants.js';
 
 export default class AddCommand {
   constructor(rootPath) {
