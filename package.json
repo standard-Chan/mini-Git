@@ -13,5 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "mocha": "^11.7.1"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1"
   }
 }

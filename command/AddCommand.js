@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import chalk from 'chalk';
 import GitUtil from '../GitUtil.js';
 import GitPaths from '../GitPaths.js';
 import { FILE_MODE } from '../constants.js';
@@ -16,8 +17,9 @@ export default class AddCommand {
 
     // 디렉토리인 경우 특별 처리
     if (fileMode === FILE_MODE.DIR) {
-      // 디렉토리의 경우 내용을 빈 문자열로 처리하거나 별도 로직 필요
-      console.log(`디렉토리 '${filePath}'는 현재 지원되지 않습니다.\n`);
+      console.error(
+        chalk.red(`디렉토리 '${chalk.yellow(filePath)}'는 추가할 수 없습니다.\n`)
+      );
       return;
     }
 
@@ -25,19 +27,21 @@ export default class AddCommand {
     const shaHash = this.gitUtil.getSha1Hash(fileContent); // 해시값
     const compressed = this.compress(fileContent); // content 압축
 
-    this.saveBlob(shaHash, compressed) // file 저장
-    this.saveToIndex(shaHash, fileMode, filePath); // index 파일 정보 에 추가 (스태이징)
+    this.saveBlob(shaHash, compressed); // file 저장
+    this.saveToIndex(shaHash, fileMode, filePath); // index 파일 정보 추가
 
-    console.log(`add : '${filePath}' 가 staged 되었습니다. id: ${shaHash}\n`)
+    console.log(
+      chalk.green('✓ ') +
+      `${chalk.greenBright(filePath)} 가 staged 되었습니다. ` +
+      `hash id : ${chalk.yellow(shaHash)}\n`
+    );
   }
 
   /** blob 파일 저장하기 */
   saveBlob(filename, content) {
-    // 앞 2글자로 디렉토리 생성하기
     const blobDir = path.join(this.gitPaths.objectsPath, filename.slice(0, 2));
     const blobPath = path.join(blobDir, filename);
 
-    // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값})
     if (!fs.existsSync(blobDir)) {
       fs.mkdirSync(blobDir, { recursive: true });
     }
@@ -47,26 +51,15 @@ export default class AddCommand {
 
   /** 파일 모드 얻기 */
   #getFileMode(filePath) {
-    const stat = fs.lstatSync(filePath); // 파일 유형 얻기
+    const stat = fs.lstatSync(filePath);
 
-    if (stat.isFile()) {
-      return FILE_MODE.EXE;
-    }
-
-    if (stat.isDirectory()) {
-      return FILE_MODE.DIR;
-    }
-
-    if (stat.isSymbolicLink()) {
-      return FILE_MODE.SYMBOL;
-    }
-
+    if (stat.isFile()) return FILE_MODE.EXE;
+    if (stat.isDirectory()) return FILE_MODE.DIR;
+    if (stat.isSymbolicLink()) return FILE_MODE.SYMBOL;
     return FILE_MODE.REGULAR;
   }
 
-  /** index 파일에 맵핑 정보 저장하기 
-   * 저장 형태 : {파일모드} {해시값} {루트 - 상대경로}
-  */
+  /** index 파일에 맵핑 정보 저장하기 */
   saveToIndex(shaHash, fileMode, filePath) {
     const indexEntry = `${fileMode} ${shaHash} ${filePath}\n`;
     fs.appendFileSync(this.gitPaths.indexPath, indexEntry);

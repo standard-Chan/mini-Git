@@ -50,7 +50,7 @@ export default class Repository {
   status() {
     const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath).split('\n').filter(e=>e);
 
-    console.log(`현재 branch [${this.gitUtil.getCurrentBranch()}]\n현재 스테이징된 파일`);
+    console.log(`현재 branch [${this.gitUtil.getCurrentBranch()}] - 스테이징된 파일`);
     indexLines.forEach(line => {
       const [fileMode, hash, fileName] = line.split(' ');
       console.log(`- ${fileName} : ${hash}`);
