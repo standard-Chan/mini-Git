@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import chalk from 'chalk';
 import GitUtil from '../GitUtil.js';
 import GitPaths from '../GitPaths.js';
 import { FILE_MODE } from '../constants.js';
@@ -22,16 +23,14 @@ export default class CommitCommand {
 
   /** commit 객체 생성 */
   createCommit(message = "empty", author = "empty", email = "temp@gmail.com", rootHash) {
-    // 현재 커밋 객체 해시
     const curCommitHash = this.gitUtil.getCurrentCommitHash();
-
     const content = this.createCommitContent(message, author, email, rootHash, curCommitHash);
 
     const commitHash = this.gitUtil.getSha1Hash(content);
     const compressed = this.gitUtil.compress(content);
-    this.gitUtil.saveObject(commitHash, compressed); // 저장
+    this.gitUtil.saveObject(commitHash, compressed);
 
-    console.log(`커밋 완료 - ${commitHash}`);
+    console.log(chalk.green('커밋 완료'), '-', chalk.yellow(commitHash));
     return commitHash;
   }
 
@@ -42,6 +41,7 @@ export default class CommitCommand {
     if (headRef.startsWith("ref:")) {
       const refPath = path.join(this.gitPaths.gitPath, headRef.slice(5));
       fs.writeFileSync(refPath, commitHash);
+      console.log(`[${chalk.gray('HEAD')}] ${chalk.cyanBright(headRef.slice(5))} -> ${commitHash}`);
     }
   }
 
@@ -62,20 +62,17 @@ export default class CommitCommand {
     return `commit ${content.length}\0${content}`;
   }
 
-  /** index 파일을 읽고 파싱한다. [{fileMode, hash, filePath}, ... ]*/
+  /** index 파일을 읽고 파싱한다. */
   readIndex() {
-    let indexEntries = []; // [{ fileMode, hash, filePath }, ...]
-    const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath, 'utf-8')
+    const lines = this.gitUtil.readFile(this.gitPaths.indexPath, 'utf-8')
       .trim()
       .split('\n')
       .filter(Boolean);
 
-    indexLines.forEach(line => {
+    return lines.map(line => {
       const [fileMode, hash, filePath] = line.trim().split(' ');
-      indexEntries.push({ fileMode, hash, filePath });
+      return { fileMode, hash, filePath };
     });
-
-    return indexEntries;
   }
 
   /** Entries를 Tree 자료구조로 변환 */
@@ -83,28 +80,22 @@ export default class CommitCommand {
     let tree = {};
     entries.forEach(({ fileMode, hash, filePath }) => {
       tree = this.insertIntoTree(tree, filePath, fileMode, hash);
-    })
+    });
 
     return { root: tree };
   }
 
-  /** 트리구조 자료구조에 path에 맞게 데이터를 넣는다.
-   * ex: a/b/text.txt 를 {a:{b:{'text.txt': {fileMode, filename, hash}}}}  
-   * @param {String} path 예시 : 'a/b/text.txt'
-   * */
+  /** 트리구조 자료구조에 path에 맞게 데이터를 넣는다. */
   insertIntoTree(tree, filePath, fileMode, hash) {
     let current = tree;
-
-    // filePath를 분할 'a/b/text.txt' => ['a', 'b', 'text.txt']
     const paths = filePath.split('/');
 
     for (let i = 0; i < paths.length; i++) {
       const pathName = paths[i];
-
       if (i === paths.length - 1) {
-        current[pathName] = { fileMode, filename: pathName, hash }; // 파일 삽입
+        current[pathName] = { fileMode, filename: pathName, hash };
       } else {
-        if (!current[pathName]) current[pathName] = {};  // 디렉토리 삽입
+        if (!current[pathName]) current[pathName] = {};
         current = current[pathName];
       }
     }
@@ -112,42 +103,38 @@ export default class CommitCommand {
     return tree;
   }
 
-  /** Tree 자료구조를 leaf 노드에서부터 올라오면서 Tree 의 content를 채운다.
-   * @param {*} cur 현재 노드
-  */
+  /** Tree 자료구조를 leaf부터 올라오며 content 구성 */
   buildTree(cur) {
-    (!cur.content) ? cur.content = '' : cur.content += ('\n'); // 없으면 만들고 있으면 한줄 띄우기
+    (!cur.content) ? cur.content = '' : cur.content += '\n';
 
-    // 자식 순회
     for (const child in cur) {
-      if (child == 'content') continue;
+      if (child === 'content') continue;
 
       const childNode = cur[child];
-      if (childNode.fileMode && childNode.hash) { // 파일인 경우
-        cur.content += (`${FILE_MODE.REGULAR} ${childNode.filename}\0${childNode.hash}`);
-      }
-      else { // 디렉토리인 경우
-        const hash = this.buildTree(childNode); // 하위 노드 먼저 방문하여 content 채우기
-        cur['content'] += (`${FILE_MODE.DIR} ${child}\0${hash}`);
+      if (childNode.fileMode && childNode.hash) {
+        cur.content += `${FILE_MODE.REGULAR} ${childNode.filename}\0${childNode.hash}`;
+        console.log(chalk.gray(`- ${chalk.cyanBright(childNode.filename)} 파일 추가됨 (hash: ${chalk.yellow(childNode.hash)})`));
+      } else {
+        const hash = this.buildTree(childNode);
+        cur.content += `${FILE_MODE.DIR} ${child}\0${hash}`;
+        console.log(chalk.blue(`'${chalk.cyanBright(child)}' -> ${chalk.yellow(hash)}`));
       }
     }
 
-    const hash = this.createTreeObject(cur.content);
-
-    return hash;
+    return this.createTreeObject(cur.content);
   }
 
-  /** Tree 객체를 생성하고 저장한다. 이후 hash 값을 반환한다.*/
+  /** Tree 객체 생성 및 저장 */
   createTreeObject(content) {
     const hash = this.gitUtil.getSha1Hash(content);
     const compressed = this.gitUtil.compress(content);
     this.gitUtil.saveObject(hash, compressed);
-    //console.log(`- '${filename}'directory가 갱신되었습니다.`);
     return hash;
   }
 
+  /** 인덱스 초기화 */
   clearIndex() {
     fs.writeFileSync(this.gitPaths.indexPath, '');
-    console.log("커밋이 성공하여, 스테이징된 파일들을 지웁니다.");
+    console.log(chalk.gray('스테이징된 파일들(index)을 초기화했습니다.'));
   }
 }

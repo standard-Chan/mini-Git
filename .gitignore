@@ -7,3 +7,4 @@ package.json
 .gitignore
 a/
 gitTest/
+.gitTest/
