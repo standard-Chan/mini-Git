@@ -6,6 +6,7 @@ import AddCommand from './command/AddCommand.js';
 import CommitCommand from './command/CommitCommand.js';
 import LogCommand from './command/LogCommand.js';
 import GitPaths from './GitPaths.js';
+import chalk from 'chalk';
 
 export default class Repository {
   constructor(rootPath) {
@@ -48,17 +49,29 @@ export default class Repository {
   }
 
   status() {
-    const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath).split('\n').filter(e=>e);
+    const indexLines = this.gitUtil.readFile(this.gitPaths.indexPath, 'utf-8')
+      .split('\n')
+      .filter(e => e);
 
-    console.log(`현재 branch [${this.gitUtil.getCurrentBranch()}] - 스테이징된 파일`);
+    const branch = this.gitUtil.getCurrentBranch();
+
+    console.log(
+      `${chalk.bold('현재 branch')} [${chalk.cyanBright(branch)}] - ${chalk.gray('스테이징된 파일 목록')}`
+    );
+
+    if (indexLines.length === 0) {
+      console.log(chalk.gray('  (스테이징된 파일이 없습니다.)'));
+    }
+
     indexLines.forEach(line => {
       const [fileMode, hash, fileName] = line.split(' ');
-      console.log(`- ${fileName} : ${hash}`);
+      console.log(`  ${chalk.greenBright('-')} ${chalk.greenBright(fileName)} : ${chalk.yellow(hash)}`);
     });
-    console.log('\n');
+
+    console.log(); // 줄바꿈
   }
 
-  commit(message='null', author='null', email) {
+  commit(message = 'null', author = 'null', email) {
     const rootHash = this.commitCommand.createTree();
     const commitHash = this.commitCommand.createCommit(message, author, email, rootHash);
     this.commitCommand.updateHead(commitHash)

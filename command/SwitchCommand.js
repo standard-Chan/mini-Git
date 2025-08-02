@@ -1,26 +1,32 @@
 import path from 'path';
 import fs from 'fs';
+import chalk from 'chalk';
 
 export default class SwitchCommand {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
+    this.gitPath = path.join(rootPath, '.git');
+    this.headPath = path.join(this.gitPath, 'HEAD');
+    this.refsHeadsPath = path.join(this.gitPath, 'refs', 'heads');
   }
 
   moveHeadTo(branchName) {
     const branchPath = path.join(this.refsHeadsPath, branchName);
-    
-    // 브랜치가 존재하는지 확인
+
+    // 브랜치 존재 확인
     if (!fs.existsSync(branchPath)) {
-      throw new Error(`브랜치 '${branchName}'가 존재하지 않습니다.`);
+      console.error(
+        chalk.red(`브랜치 '${chalk.cyanBright(branchName)}'가 존재하지 않습니다.\n`)
+      );
+      return;
     }
 
-    // HEAD 파일 내용 변경
+    // HEAD 갱신
     const newHeadContent = `ref: refs/heads/${branchName}\n`;
     fs.writeFileSync(this.headPath, newHeadContent);
 
-    console.log(`switch : HEAD가 '${branchName}' 브랜치를 가리키도록 변경되었습니다.\n`);
+    console.log(
+      `${chalk.green('switch')}: HEAD가 '${chalk.cyanBright(branchName)}' 브랜치를 가리키도록 변경되었습니다.\n`
+    );
   }
 }
