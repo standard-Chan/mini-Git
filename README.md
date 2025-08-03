@@ -43,7 +43,7 @@ node miniGit.js
 ```
 
 ### 실행 결과
-![alt text](image.png)
+![help](images/help.png)
 
 # 명령어 작동 설명
 
@@ -79,7 +79,7 @@ $ git init
 
 ### 출력 결과
 
-![alt text](image.png)
+![init](images/init.png)
 
 ## `branch`
 
@@ -100,7 +100,7 @@ $ git branch <branch name>
 `.git/refs/heads` 에 새로 생성할 브랜치 파일을 생성합니다.
 
 ### 실행결과
-![alt text](image-1.png)
+![branch](images/branch.png)
 
 ## `switch`
 
@@ -116,7 +116,7 @@ $ git switch <branchName>
 만약 `.git/refs/heads` 에 없는 브랜치 이름을 입력할 경우 에러가 발생됩니다.
 
 ### 실행 결과
-![alt text](image-2.png)
+![switch](images/switch.png)
 
 ## `add`
 
@@ -136,7 +136,7 @@ $ git add <filePath>
 `<파일모드> <해시값> <파일이름>`를 추가하여 commit 시에 스태이징 파일 정보를 알 수 있게 합니다.
 
 ### 실행 결과
-![alt text](image-3.png)
+![add](images/add.png)
 
 ## `commit`
 
@@ -231,7 +231,7 @@ index파일을 읽어옵니다.
 7. root 의 hash를 생성 및 파일 저장
 
 ### 실행 결과
-![alt text](image-4.png)
+![commit](images/commit.png)
 
 
 ## `log`
@@ -242,7 +242,7 @@ $ git log
 parent 노드로 이동하면서 이전 커밋 객체 정보까지 모두 출력합니다.
 
 ### 실행 결과
-![alt text](image-5.png)
+![log](images/log.png)
 
 ---
 
