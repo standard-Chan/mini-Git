@@ -74,6 +74,10 @@ $ git init
 - `refs/heads/` : 각 브랜치가 가리키고 있는 커밋 정보를 저장하는 디렉토리
 - `HEAD` : 현재 HEAD가 위치한 브랜치 정보
 
+### 출력 결과
+
+![alt text](image.png)
+
 ## `branch`
 
 ```bash
@@ -92,6 +96,9 @@ $ git branch <branch name>
 
 `.git/refs/heads` 에 새로 생성할 브랜치 파일을 생성합니다.
 
+### 실행결과
+![alt text](image-1.png)
+
 ## `switch`
 
 ```bash
@@ -104,6 +111,9 @@ $ git switch <branchName>
 
 현재 `.git/HEAD`에 저장되어있는 값을 이동할 브랜치 이름으로 변경합니다.
 만약 `.git/refs/heads` 에 없는 브랜치 이름을 입력할 경우 에러가 발생됩니다.
+
+### 실행 결과
+![alt text](image-2.png)
 
 ## `add`
 
@@ -121,6 +131,9 @@ $ git add <filePath>
 
 추가적으로 스태이징 상태로 만들기 위해서 index 파일에 데이터를 추가합니다.
 `<파일모드> <해시값> <파일이름>`를 추가하여 commit 시에 스태이징 파일 정보를 알 수 있게 합니다.
+
+### 실행 결과
+![alt text](image-3.png)
 
 ## `commit`
 
@@ -214,12 +227,19 @@ index파일을 읽어옵니다.
 6. root 디렉토리에 a에서 생성한 Hash르르 사용하여 content를 생성
 7. root 의 hash를 생성 및 파일 저장
 
+### 실행 결과
+![alt text](image-4.png)
+
+
 ## `log`
 ```bash
 $ git log
 ```
 현재의 커밋 객체에 저장되어있는 데이터를 출력합니다.
 parent 노드로 이동하면서 이전 커밋 객체 정보까지 모두 출력합니다.
+
+### 실행 결과
+![alt text](image-5.png)
 
 ---
 
