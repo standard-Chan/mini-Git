@@ -42,6 +42,9 @@ node miniGit.js
   $ git switch feature
 ```
 
+### 실행 결과
+![alt text](image.png)
+
 # 명령어 작동 설명
 
 사용할 수 있는 명령어입니다.
@@ -243,31 +246,19 @@ parent 노드로 이동하면서 이전 커밋 객체 정보까지 모두 출력
 
 ---
 
-# 출력
-
-```js
-repo.init();
-
-repo.branch();
-repo.branch("새로운 브랜치!");
-repo.branch();
-repo.switch("master");
-repo.add("test.txt");
-repo.status();
-```
-
-input을 받는 모듈을 구현하지 못해서 코드로 출력한 결과입니다.
-
-![출력](https://private-user-images.githubusercontent.com/95221819/472631919-5c36467a-b99d-4114-ab06-acce4fddd9b5.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTM4OTY3ODEsIm5iZiI6MTc1Mzg5NjQ4MSwicGF0aCI6Ii85NTIyMTgxOS80NzI2MzE5MTktNWMzNjQ2N2EtYjk5ZC00MTE0LWFiMDYtYWNjZTRmZGRkOWI1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA3MzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNzMwVDE3MjgwMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWMxMGM2Njc1NTQxNmExNmVmNmMyNzg3MDJkNTU1MTQ0ZmRjYjFiMDczNjkyMzYwNDMzNzFiODU0ZWEyMmQ4NWEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.VBdB_PYwcx0zqjaYDCXHZOx5Smma4VGF3UdcoXqm0UQ)
-
-# 기타
-
 ## 싱글톤 객체
 
 `GitUtil` 클래스를 `싱글톤`으로 생성하였습니다.
 
 - 전역적으로 관리되어 객체를 매번 생성하거나 참조를 넘겨 메서드를 사용하는 불편함을 줄일 수 있습니다.
 - 내부 상태 또한 변화하지 않으므로, 테스트시에 문제가 없습니다.
+
+## 경로 객체
+
+`GitPaths` 클래스를 만들어 경로를 공유하도록 설정하였습니다.
+
+- 디렉토리 경로를 `.miniGit`이 아닌 다른 경로로 변경할 시, 해당 클래스의 변수값만 변경하여 처리할 수 있습니다.
+- 내부 경로(objects, refs) 또한 간편하게 수정할 수 있습니다.
 
 ---
 
