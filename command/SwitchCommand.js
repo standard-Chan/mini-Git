@@ -1,17 +1,16 @@
 import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
+import GitPaths from '../GitPaths.js';
 
 export default class SwitchCommand {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, '.git');
-    this.headPath = path.join(this.gitPath, 'HEAD');
-    this.refsHeadsPath = path.join(this.gitPath, 'refs', 'heads');
+    this.gitPaths = GitPaths.of(rootPath);
   }
 
   moveHeadTo(branchName) {
-    const branchPath = path.join(this.refsHeadsPath, branchName);
+    const branchPath = path.join(this.gitPaths.refsHeadsPath, branchName);
 
     // 브랜치 존재 확인
     if (!fs.existsSync(branchPath)) {
@@ -23,7 +22,7 @@ export default class SwitchCommand {
 
     // HEAD 갱신
     const newHeadContent = `ref: refs/heads/${branchName}\n`;
-    fs.writeFileSync(this.headPath, newHeadContent);
+    fs.writeFileSync(this.gitPaths.headPath, newHeadContent);
 
     console.log(
       `${chalk.green('switch')}: HEAD가 '${chalk.cyanBright(branchName)}' 브랜치를 가리키도록 변경되었습니다.\n`

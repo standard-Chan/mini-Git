@@ -16,7 +16,7 @@ export default class LogCommand {
     let currentHash = this.gitUtil.getCurrentCommitHash();
 
     if (!currentHash) {
-      console.log(chalk.yellow('fatal: your current branch \'main\' does not have any commits yet'));
+      console.log(chalk.yellow('현재 commit이 없습니다.\n'));
       return;
     }
 
@@ -66,10 +66,9 @@ export default class LogCommand {
       // Git 스타일 출력
       console.log(`${chalk.yellow('commit')} ${chalk.yellow(currentHash)}`);
       console.log(
-        `${chalk.bold('Author')}: ${chalk.cyan(authorName)} <${chalk.cyan(email)}>`
+        `${chalk.bold('작성자')}: ${chalk.cyan(authorName)} <${chalk.cyan(email)}>`
       );
-      console.log(`${chalk.bold('Date')}:   ${chalk.gray(dateStr)} ${chalk.gray(timezone)}`);
-      console.log('');
+      console.log(`${chalk.bold('날짜')}:   ${chalk.gray(dateStr)} ${chalk.gray(timezone)}\n`);
       console.log(`    ${chalk.white(messageLines.join('\n    '))}`);
       console.log('');
 

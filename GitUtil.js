@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import { createHash } from 'crypto';
+import GitPaths from './GitPaths.js';
 
 export default class GitUtil {
   static #instance;
@@ -12,12 +13,7 @@ export default class GitUtil {
     }
 
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
-
-    this.objectsPath = path.join(this.gitPath, "objects");
-    this.headPath = path.join(this.gitPath, "HEAD");
-    this.refsHeadsPath = path.join(this.gitPath, "refs", "heads");
-    this.indexPath = path.join(this.gitPath, "index");
+    this.gitPaths = GitPaths.of(rootPath);
 
     GitUtil.#instance = this;
   }
@@ -32,24 +28,44 @@ export default class GitUtil {
 
   /** 현재 HEAD가 가리키는 브랜치의 커밋 해시를 반환 */
   getCurrentCommitHash() {
-    const headContent = this.readFile(this.headPath, 'utf-8').trim();
+    try {
+      const headContent = this.readFile(this.gitPaths.headPath).trim();
 
-    const branchName = headContent.slice(5).trim(); // "ref: refs/heads/master" → "refs/heads/master"
-    const branchPath = path.join(this.gitPath, branchName);
+      if (!headContent.startsWith('ref:')) {
+        // HEAD가 직접 커밋 해시를 가리키는 경우 (detached HEAD)
+        return headContent;
+      }
 
-    if (!fs.existsSync(branchPath)) {
-      throw new Error(`HEAD가 참조하는 브랜치 파일(${branchPath})이 존재하지 않습니다.`);
+      const branchName = headContent.slice(5).trim(); // "ref: refs/heads/master" → "refs/heads/master"
+      const branchPath = path.join(this.gitPaths.gitPath, branchName);
+
+      if (!fs.existsSync(branchPath)) {
+        // 브랜치 파일이 없는 경우 (아직 커밋이 없음)
+        return null;
+      }
+
+      const commitHash = fs.readFileSync(branchPath, 'utf-8').trim();
+      return commitHash || null;
+    } catch (error) {
+      return null;
     }
-
-    const commitHash = fs.readFileSync(branchPath, 'utf-8').trim();
-    return commitHash;
   }
 
+  /** 현재 브랜치명 반환 */
   getCurrentBranch() {
-    const headContent = this.readFile(this.headPath, 'utf-8').trim();
-    const branchPath = headContent.slice(5).trim();
+    try {
+      const headContent = this.readFile(this.gitPaths.headPath).trim();
+      
+      if (!headContent.startsWith('ref:')) {
+        // detached HEAD 상태
+        return 'HEAD';
+      }
 
-    return branchPath.slice(branchPath.lastIndexOf('/')+1);
+      const branchPath = headContent.slice(5).trim(); // "ref: refs/heads/master" → "refs/heads/master"
+      return branchPath.slice(branchPath.lastIndexOf('/') + 1);
+    } catch (error) {
+      return 'main'; // 기본값
+    }
   }
 
   /** sha1 해시값을 반환 */
@@ -71,18 +87,59 @@ export default class GitUtil {
     return fs.readFileSync(filePath, 'utf-8');
   }
 
-    /** 객체 저장 */
+  /** 객체 저장 */
   saveObject(filename, content) {
     // 앞 2글자로 디렉토리 생성하기
-    const dir = path.join(this.objectsPath, filename.slice(0, 2));
-    const TreePath = path.join(dir, filename);
+    const dir = path.join(this.gitPaths.objectsPath, filename.slice(0, 2));
+    const objectPath = path.join(dir, filename.slice(2));
 
-    // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값})
+    // 디렉토리 생성 (ex: objects/{hash값 앞 2글자}/{hash값 나머지})
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    fs.writeFileSync(TreePath, content);
+    fs.writeFileSync(objectPath, content);
+  }
+
+  /** 객체 읽기 */
+  readObject(hash) {
+    const dir = path.join(this.gitPaths.objectsPath, hash.slice(0, 2));
+    const objectPath = path.join(dir, hash.slice(2));
+
+    if (!fs.existsSync(objectPath)) {
+      throw new Error(`객체를 찾을 수 없습니다: ${hash}`);
+    }
+
+    const compressed = fs.readFileSync(objectPath);
+    return zlib.inflateSync(compressed).toString();
+  }
+
+  /** 브랜치 존재 여부 확인 */
+  branchExists(branchName) {
+    const branchPath = path.join(this.gitPaths.refsHeadsPath, branchName);
+    return fs.existsSync(branchPath);
+  }
+
+  /** 브랜치 목록 반환 */
+  getBranches() {
+    if (!fs.existsSync(this.gitPaths.refsHeadsPath)) {
+      return [];
+    }
+
+    return fs.readdirSync(this.gitPaths.refsHeadsPath)
+      .filter(file => {
+        const fullPath = path.join(this.gitPaths.refsHeadsPath, file);
+        return fs.statSync(fullPath).isFile();
+      });
+  }
+
+  /** 인덱스 파일이 비어있는지 확인 */
+  isIndexEmpty() {
+    try {
+      const indexContent = this.readFile(this.gitPaths.indexPath).trim();
+      return indexContent === '';
+    } catch (error) {
+      return true;
+    }
   }
 }
-
