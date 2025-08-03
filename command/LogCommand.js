@@ -3,26 +3,26 @@ import zlib from 'zlib';
 import fs from 'fs';
 import chalk from 'chalk';
 import GitUtil from '../GitUtil.js';
+import GitPaths from '../GitPaths.js';
 
 export default class LogCommand {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, '.git');
-
-    this.objectsPath = path.join(this.gitPath, 'objects');
-    this.headPath = path.join(this.gitPath, 'HEAD');
-    this.refsHeadsPath = path.join(this.gitPath, 'refs', 'heads');
-    this.indexPath = path.join(this.gitPath, 'index');
-
+    this.gitPaths = GitPaths.of(rootPath);
     this.gitUtil = GitUtil.getInstance();
   }
 
   log() {
     let currentHash = this.gitUtil.getCurrentCommitHash();
 
+    if (!currentHash) {
+      console.log(chalk.yellow('fatal: your current branch \'main\' does not have any commits yet'));
+      return;
+    }
+
     while (currentHash) {
-      const dir = path.join(this.objectsPath, currentHash.slice(0, 2));
-      const file = path.join(dir, currentHash);
+      const dir = path.join(this.gitPaths.objectsPath, currentHash.slice(0, 2));
+      const file = path.join(dir, currentHash.slice(2));
 
       if (!fs.existsSync(file)) {
         console.error(
@@ -43,22 +43,35 @@ export default class LogCommand {
       const msgIndex = lines.findIndex(line => line.trim() === '');
       const messageLines = lines.slice(msgIndex + 1);
 
+      // authorLine이 없는 경우 안전 처리
+      if (!authorLine) {
+        console.error(chalk.red(`[ERROR] 커밋 객체에서 author 정보를 찾을 수 없습니다.`));
+        break;
+      }
+
       const authorMatch = authorLine
         .replace(/^author /, '')
         .match(/^(.+?) <(.+?)> (\d+) ([+-]\d{4})$/);
+
+      if (!authorMatch) {
+        console.error(chalk.red(`[ERROR] author 정보 파싱에 실패했습니다: ${authorLine}`));
+        break;
+      }
 
       const [, authorName, email, timestamp, timezone] = authorMatch;
       const dateStr = new Date(Number(timestamp) * 1000).toLocaleString('ko-KR', {
         timeZone: 'Asia/Seoul',
       });
 
-      // 출력
+      // Git 스타일 출력
       console.log(`${chalk.yellow('commit')} ${chalk.yellow(currentHash)}`);
       console.log(
-        `${chalk.bold('작성자')}: ${chalk.cyanBright(authorName)} <${chalk.cyan(email)}>`
+        `${chalk.bold('Author')}: ${chalk.cyan(authorName)} <${chalk.cyan(email)}>`
       );
-      console.log(`${chalk.bold('날짜')}:   ${chalk.gray(dateStr)} ${chalk.gray(timezone)}`);
-      console.log(`\n    ${chalk.green(messageLines.join('\n    '))}\n`);
+      console.log(`${chalk.bold('Date')}:   ${chalk.gray(dateStr)} ${chalk.gray(timezone)}`);
+      console.log('');
+      console.log(`    ${chalk.white(messageLines.join('\n    '))}`);
+      console.log('');
 
       if (parentLine) {
         currentHash = parentLine.split(' ')[1];

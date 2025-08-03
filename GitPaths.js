@@ -3,7 +3,7 @@ import path from 'path';
 export default class GitPaths {
   constructor(rootPath) {
     this.rootPath = rootPath;
-    this.gitPath = path.join(rootPath, ".git");
+    this.gitPath = path.join(rootPath, ".miniGit");
 
     this.objectsPath = path.join(this.gitPath, "objects");
     this.headPath = path.join(this.gitPath, "HEAD");
