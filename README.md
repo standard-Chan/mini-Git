@@ -3,9 +3,11 @@
 JS로 구현한 git입니다.
 
 ## 실행
+
 ```
 node miniGit.js
 ```
+
 위 명령어 입력시 miniGit이 실행됩니다. git 정보는 `.miniGit` 디렉토리에 저장됩니다.
 
 ## 사용 가능 기능
@@ -19,6 +21,7 @@ node miniGit.js
 - `switch`: 브랜치를 이동할 때
 
 ### `git help`
+
 ```text
 사용 가능한 Git 명령어:
 
@@ -43,6 +46,7 @@ node miniGit.js
 ```
 
 ### 실행 결과
+
 ![help](images/help.png)
 
 # 명령어 작동 설명
@@ -100,6 +104,7 @@ $ git branch <branch name>
 `.git/refs/heads` 에 새로 생성할 브랜치 파일을 생성합니다.
 
 ### 실행결과
+
 ![branch](images/branch.png)
 
 ## `switch`
@@ -108,7 +113,7 @@ $ git branch <branch name>
 $ git switch <branchName>
 ```
 
-현재 HEAD를 해당 브랜치를 가리키도록 만듭니다. 
+현재 HEAD를 해당 브랜치를 가리키도록 만듭니다.
 
 #### 내부 로직
 
@@ -116,6 +121,7 @@ $ git switch <branchName>
 만약 `.git/refs/heads` 에 없는 브랜치 이름을 입력할 경우 에러가 발생됩니다.
 
 ### 실행 결과
+
 ![switch](images/switch.png)
 
 ## `add`
@@ -136,6 +142,7 @@ $ git add <filePath>
 `<파일모드> <해시값> <파일이름>`를 추가하여 commit 시에 스태이징 파일 정보를 알 수 있게 합니다.
 
 ### 실행 결과
+
 ![add](images/add.png)
 
 ## `commit`
@@ -143,6 +150,7 @@ $ git add <filePath>
 ```bash
 $ git commit
 ```
+
 스테이징 영역에 있는 파일들을 새로운 Tree 객체에 저장하고 `HEAD` 를 새로운 Commit 객체로 갱신합니다.
 
 #### `내부 로직`
@@ -219,9 +227,11 @@ index파일을 읽어옵니다.
       }
     }
 ```
+
 하위 디렉토리부터 읽으면서 content로 직렬화함과 동시에 Tree 객체를 만들어냅니다. 이후 만들어낸 Tree객체의 Hash값을 상위 노드로 전파시킵니다.
 
-위 자료를 예시로 들면, 
+위 자료를 예시로 들면,
+
 1. b를 읽고 test.txt를 직렬화하여 content 생성
 2. b의 content를 읽어서 Hash값을 생성하고, zlib으로 압축하여 Tree 객체 생성 및 저장
 3. c도 위와 같은 과정을 거침
@@ -231,17 +241,47 @@ index파일을 읽어옵니다.
 7. root 의 hash를 생성 및 파일 저장
 
 ### 실행 결과
+
 ![commit](images/commit.png)
 
+## `reset`
+
+```bash
+$ git reset --soft <커밋해시>
+
+# 기본값은 mixed입니다.
+$ git reset <커밋해시>
+$ git reset --mixed <커밋해시>
+
+$ git reset --hard <커밋해시>
+```
+
+### `내부로직`
+
+`reset soft`
+
+1. 현재 Branch HEAD를 해당 커밋해시로 수정합니다.
+
+`reset mixed`
+1. 현재 Branch HEAD를 해당 커밋해시로 수정합니다.
+2. index 파일 초기화
+
+`reset hard`
+1. 현재 Branch HEAD를 해당 커밋해시로 수정합니다.
+2. index 파일 초기화
+3. 해당 커밋 시점으로 파일 복구
 
 ## `log`
+
 ```bash
 $ git log
 ```
+
 현재의 커밋 객체에 저장되어있는 데이터를 출력합니다.
 parent 노드로 이동하면서 이전 커밋 객체 정보까지 모두 출력합니다.
 
 ### 실행 결과
+
 ![log](images/log.png)
 
 ---
@@ -265,6 +305,7 @@ parent 노드로 이동하면서 이전 커밋 객체 정보까지 모두 출력
 # 트러블 슈팅
 
 ## 알고리즘
+
 깊이 우선 탐색으로 JS 객체를 순회할때, 해당 노드의 이름을 모르는 문제가 발생했다.
 
 ```js
