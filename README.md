@@ -108,7 +108,7 @@ $ git branch <branch name>
 $ git switch <branchName>
 ```
 
-현재 HEAD를 해당 브랜치를 가리키도록 만듭니다.
+현재 HEAD를 해당 브랜치를 가리키도록 만듭니다. 
 
 #### 내부 로직
 
